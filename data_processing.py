@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
-def scale_01(data:DataFrame)-> DataFrame:
+def scale_01(data: pd.DataFrame )-> pd.DataFrame :
     """Scales all columns of a DataFrame to the range [0, 1] using MinMaxScaler.
 
     Args:
@@ -15,8 +15,18 @@ def scale_01(data:DataFrame)-> DataFrame:
     data = scale.fit_transform(data)
     return pd.DataFrame(data)
 
+def letter_to_number(data: pd.Series) -> pd.Series:
+    for i in range(len(data)):
+        if data.loc[i] == "B":
+            data.loc[i] = 0
+        elif data.loc[i] == "M":
+            data.loc[i] = 1
+        else:
+            raise ValueError("Unexpected label")
+    return data
 
-def data_processing(data: str = 'data_given.data') -> DataFrame:
+
+def data_processing(data: str = 'data_given.data') -> pd.DataFrame:
     """Loads data, transposes, removes first row, scales remaining rows.
 
     Args:
@@ -28,11 +38,15 @@ def data_processing(data: str = 'data_given.data') -> DataFrame:
     data = pd.read_csv(data, header= None)
     data = data.T
     data = data.drop(index=data.index[0])
+
     df1 = data.iloc[0]
+    df1 = letter_to_number(df1)
+
     df2 = data.iloc[1:]
     df2 = scale_01(df2)
-    df1 = pd.DataFrame(data)
-    df_final = pd.concat([df1.T, df2])
+
+    df1 = pd.DataFrame(df1).T
+    df_final = pd.concat([df1, df2], axis=0, ignore_index=True)
     return df_final
 
 

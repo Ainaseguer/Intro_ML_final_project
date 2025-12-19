@@ -8,7 +8,7 @@ class SVM:
     Class for the Support Vector Machine model.
     """
     
-    def __int__(self, learning_rate: float =0.001, lambda_param: float =0.01, iterations: int = 1000) -> None:
+    def __init__(self, learning_rate: float =0.001, lambda_param: float =0.01, iterations: int = 1000) -> None:
         """
         Constructor.
 
