@@ -1,5 +1,5 @@
 from typing import Callable
-
+import itertools 
 import numpy as np
 
 
@@ -37,7 +37,22 @@ class SVM:
 
         Returns:
             None
+
+        experiment_result is if it is benign or malignant 
+        margin how well classified it is 
         """
+        experiment_result = self.iloc[0].values
+        features = self.iloc[1:].values.T
+        n_samples, n_features = features.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0 
+
+        for i in range (self.iterations):
+            prediction = features @ self.weights + self.bias
+            margins = experiment_result * prediction
+            #IDK how to continue 
+
+
         pass
 
     def predict(self, features: np.ndarray) -> np.ndarray:
@@ -49,8 +64,16 @@ class SVM:
 
         Returns:
             np.ndarray: predicted target values
+
+        It is wrong, because prediction is a vector 
         """
-        pass
+        prediction = features @ self.weights + self.bias
+        if prediction== 1:
+            return "B"
+        if prediction == 0:
+            return "M"
+        return prediction
+        
     
 
     def _hinge_loss(self, features: np.ndarray, target: np.ndarray) -> float:
