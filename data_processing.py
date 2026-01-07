@@ -2,8 +2,9 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
-def scale_01(data: pd.DataFrame )-> pd.DataFrame :
-    """Scales all columns of a DataFrame to the range [0, 1] using MinMaxScaler.
+def scale_01(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Scales all columns of a DataFrame to the range [0, 1] using MinMaxScaler.
 
     Args:
         data (DataFrame): Input DataFrame.
@@ -11,46 +12,63 @@ def scale_01(data: pd.DataFrame )-> pd.DataFrame :
     Returns:
         DataFrame: Scaled data where each value is in the range [0, 1].
     """
-    scale = MinMaxScaler(feature_range=(0,1))
-    data = scale.fit_transform(data)
+    # Scaling the data to range [0,1]
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    data = scaler.fit_transform(data)
+
     return pd.DataFrame(data)
 
+
 def letter_to_number(data: pd.Series) -> pd.Series:
-    for i in range(len(data)):
-        if data.loc[i] == "B":
-            data.loc[i] = 0
-        elif data.loc[i] == "M":
-            data.loc[i] = 1
-        else:
-            raise ValueError("Unexpected label")
+    """
+    Encodes the labels from the dataset from 'M' and 'B'
+    to be 0 and 1.
+
+    Args:
+        data (pd.Series): The Target Series containing 'M' and 'B' labels.
+
+    Returns:
+        pd.Series: processed Target Series with 0 and 1 labels
+    """
+    # Mapping the labels
+    data = data.map({"B": 0, "M": 1})
+
+    # Check for unexpected values
+    if data.isnull().any():
+        raise ValueError("Unexpected label")
+
     return data
 
 
-def data_processing(data: str = 'data_given.data') -> pd.DataFrame:
-    """Loads data, transposes, removes first row, scales remaining rows.
+def data_processing(data: str = "data_given.data") -> tuple[pd.DataFrame, pd.Series]:
+    """
+    Loads data, transposes, removes first row, and scales remaining rows.
 
     Args:
-        data (str, optional): A file path contaning the data. Defaults to 'data_given.data'.
+        data (str, optional): A file path contaning the data.
+        Defaults to 'data_given.data'.
 
     Returns:
-        DataFrame: processed dataset
+        tuple[pd.DataFrame, pd.Series]: A tuple containing the processed
+        Features DataFrame (X) and Target Series (y).
     """
-    data = pd.read_csv(data, header= None)
+    # Loading the data
+    data = pd.read_csv(data, header=None)
+    # Transposition
     data = data.T
+    # Removing the first row
     data = data.drop(index=data.index[0])
 
-    df1 = data.iloc[0]
-    df1 = letter_to_number(df1)
+    # Seperating the Target (y) and encoding the labels
+    y = data.iloc[0]
+    y = letter_to_number(y)
 
-    df2 = data.iloc[1:]
-    df2 = scale_01(df2)
+    # Scaling the Features (X) to be in range [0, 1]
+    X = data.iloc[1:]
+    X = scale_01(X)
+    X = pd.DataFrame(X)
 
-    df1 = pd.DataFrame(df1).T
-    df_final = pd.concat([df1, df2], axis=0, ignore_index=True)
-    return df_final
-
+    return X, y
 
 
 print(data_processing())
-
-
