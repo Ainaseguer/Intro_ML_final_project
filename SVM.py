@@ -11,6 +11,8 @@ class SVM:
         learning_rate: float = 0.001,
         lambda_param: float = 0.01,
         iterations: int = 1000,
+        weights: np.ndarray = np.array([]),
+        bias: float = 0.0,
     ) -> None:
         """
         Constructor.
@@ -26,8 +28,8 @@ class SVM:
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
         self.iterations = iterations
-        self.weights = None
-        self.bias = None
+        self.weights = weights
+        self.bias = bias
 
     def fit(self, features: np.ndarray, target: np.ndarray) -> None:
         """

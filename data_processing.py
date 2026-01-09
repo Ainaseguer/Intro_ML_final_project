@@ -1,13 +1,14 @@
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
-def scale_01(data: pd.DataFrame) -> pd.DataFrame:
+def scale_01(data: np.ndarray) -> pd.DataFrame:
     """
     Scales all columns of a DataFrame to the range [0, 1] using MinMaxScaler.
 
     Args:
-        data (DataFrame): Input DataFrame.
+        data (np.ndarray): Input features array.
 
     Returns:
         DataFrame: Scaled data where each value is in the range [0, 1].
@@ -40,12 +41,14 @@ def letter_to_number(data: pd.Series) -> pd.Series:
     return data
 
 
-def data_processing(data: str = "data_given.data") -> tuple[pd.DataFrame, pd.Series]:
+def data_processing(
+    data_path: str = "data_given.data",
+) -> tuple[pd.DataFrame, pd.Series]:
     """
     Loads data, transposes, removes first row, and scales remaining rows.
 
     Args:
-        data (str, optional): A file path contaning the data.
+        data_path (str, optional): A file path containing the data.
         Defaults to 'data_given.data'.
 
     Returns:
@@ -53,7 +56,7 @@ def data_processing(data: str = "data_given.data") -> tuple[pd.DataFrame, pd.Ser
         Features DataFrame (X) and Target Series (y).
     """
     # Loading the data
-    data = pd.read_csv(data, header=None)
+    data = pd.read_csv(filepath_or_buffer=data_path, header=None)
     # Transposition
     data = data.T
     # Removing the first row
@@ -65,7 +68,7 @@ def data_processing(data: str = "data_given.data") -> tuple[pd.DataFrame, pd.Ser
 
     # Scaling the Features (X) to be in range [0, 1]
     X = data.iloc[1:]
-    X = scale_01(X)
+    X = scale_01(X.to_numpy())
     X = pd.DataFrame(X)
 
     return X, y
