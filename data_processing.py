@@ -3,9 +3,10 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
-def scale_01(data: np.ndarray) -> pd.DataFrame:
+def normalization(data: np.ndarray) -> pd.DataFrame:
     """
-    Scales all columns of a DataFrame to the range [0, 1] using MinMaxScaler.
+    Normalizes the data by scaling all columns of a DataFrame to the range[0, 1]
+    using MinMaxScaler.
 
     Args:
         data (np.ndarray): Input features array.
@@ -29,13 +30,13 @@ def letter_to_number(data: pd.Series) -> pd.Series:
         data (pd.Series): The Target Series containing 'M' and 'B' labels.
 
     Returns:
-        pd.Series: processed Target Series with 0 and 1 labels
+        pd.Series: processed Target column with 0 and 1 labels
     """
     # Mapping the labels
     data = data.map({"B": 0, "M": 1})
 
     # Check for unexpected values
-    if data.isnull().any():
+    if any(data == ""):
         raise ValueError("Unexpected label")
 
     return data
@@ -53,7 +54,7 @@ def data_processing(
 
     Returns:
         tuple[pd.DataFrame, pd.Series]: A tuple containing the processed
-        Features DataFrame (X) and Target Series (y).
+        features DataFrame (X) and Target Series (y).
     """
     # Loading the data
     data = pd.read_csv(filepath_or_buffer=data_path, header=None)
@@ -67,12 +68,7 @@ def data_processing(
     y = letter_to_number(y)
 
     # Scaling the Features (X) to be in range [0, 1]
-    X = data.iloc[1:]
-    X = X.T
-    X = scale_01(X.to_numpy())
-    X = pd.DataFrame(X)
+    X = data.iloc[1:].T
+    X = normalization(X.to_numpy())
 
     return X, y
-
-
-print(data_processing())
