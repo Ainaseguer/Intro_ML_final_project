@@ -141,9 +141,8 @@ class SVM:
         probabilities = np.clip(probabilities, epsilon, 1 - epsilon)
 
         # Calculating BCE
-        loss = -np.mean(
-            y_prob, *np.log(probabilities) + (1 - y_prob) * np.log(1 - probabilities)
-        )
+        loss = -np.mean(y_prob * np.log(probabilities) + (1 - y_prob) * np.log(1 - probabilities))
+
 
         # Returning the loss
         return loss

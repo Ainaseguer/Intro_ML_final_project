@@ -2,6 +2,7 @@ from data_processing import data_processing
 from SVM import SVM
 
 
+
 def main():
     # Extracting features and targets from the data set
     X, y = data_processing()

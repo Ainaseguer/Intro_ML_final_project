@@ -68,6 +68,7 @@ def data_processing(
 
     # Scaling the Features (X) to be in range [0, 1]
     X = data.iloc[1:]
+    X = X.T
     X = scale_01(X.to_numpy())
     X = pd.DataFrame(X)
 
