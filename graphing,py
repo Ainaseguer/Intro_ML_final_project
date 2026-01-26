@@ -1,0 +1,167 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.model_selection import validation_curve
+
+from data_processing import data_processing
+from SVM import SVM
+
+
+def plot_validation_curve() -> None:
+    """
+    Plots the validation curve for the SVM model by varying the regularization
+    parameter C and evaluating training and cross-validation accuracy.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+    X, y = data_processing()
+
+    # Define the range of C values to test
+    param_range = [0.0001, 0.001, 0.01, 0.1, 1, 10]
+    # Compute validation curve
+    train_scores, test_scores = validation_curve(
+        SVM(),
+        X,
+        y,
+        param_name="c_param",
+        param_range=param_range,
+        cv=5,
+        scoring="accuracy",
+        n_jobs=-1,
+    )
+
+    # Calculate mean scores
+    train_mean = np.mean(train_scores, axis=1)
+    test_mean = np.mean(test_scores, axis=1)
+
+    # Plot validation curve
+    plt.figure(figsize=(10, 6))
+    plt.semilogx(
+        param_range, train_mean, label="Training Accuracy", color="blue", marker="o"
+    )
+    plt.semilogx(
+        param_range,
+        test_mean,
+        label="Cross-Validation Accuracy",
+        color="red",
+        marker="o",
+    )
+    plt.title("Validation Curve: Relationship between C and the Model's Accuracy")
+    plt.xlabel("C (Regularization Strength)")
+    plt.ylabel("Accuracy Score")
+    plt.legend(loc="best")
+    plt.grid(True)
+    plt.show()
+
+
+def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> None:
+    """
+    Plots the hinge loss curve for the SVM model over a specified number of iterations.
+    Args:
+        iterations (int): Number of iterations to train the model.
+        learning_rate (float): Learning rate for the SVM model.
+
+    Returns:
+        None
+    """
+
+    X, y = data_processing()
+
+    # Initialize SVM model with specified learning rate
+    model = SVM(iterations=1, learning_rate=learning_rate)
+    model.weights = np.zeros(X.shape[1])
+    model.bias = 0
+
+    # Train the model and record hinge loss at each iteration
+    loss_history = []
+
+    for i in range(iterations):
+        model.fit(X, y)
+        current_loss = model._hinge_loss(X, y)
+        loss_history.append(current_loss)
+
+    # Plot hinge loss curve
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(iterations), loss_history, color="green", linewidth=2)
+    plt.xlabel("Iterations")
+    plt.ylabel("Average Hinge Loss")
+    plt.title("Graph showing Hinge Loss of SVM model")
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+
+def plot_pca(n_components: int = 2) -> None:
+    """
+    Plots the PCA results of the dataset.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+    X, y = data_processing()
+
+    model = SVM()
+    X_pca, _ = model.apply_pca(X, n_components=n_components)
+
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap="viridis", alpha=0.7)
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
+    plt.title("Graph showing dimensional reduction using PCA of Breast Cancer Dataset")
+    plt.legend(handles=scatter.legend_elements()[0], labels=["Benign", "Malignant"])
+    plt.show()
+
+
+def plot_elbow_method() -> None:
+    """
+    Plots the elbow method for determining the optimal number of components in PCA.
+
+    Args:
+        None
+    Returns:
+        None
+    """
+    X, y = data_processing()
+
+    # Apply PCA to the dataset and compute explained variance
+    pca = PCA(n_components=X.shape[1])
+    pca.fit(X)
+    cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+
+    # Plot the elbow method graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        range(1, len(cumulative_variance) + 1),
+        cumulative_variance,
+        marker="o",
+        color="b",
+    )
+    plt.axhline(y=0.95, color="r", linestyle="--", label="95% Explained Variance")
+    plt.title(
+        "Relationship between Number of Principal Components and Cumulative Explained Variance"
+    )
+    plt.xlabel("Number of Principal Components")
+    plt.ylabel("Cumulative Explained Variance")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    print("Generating validation curve...")
+    plot_validation_curve()
+
+    print("\nGenerating loss curve...")
+    plot_loss_curve()
+
+    print("\nGenerating elbow method plot...")
+    plot_elbow_method()
+
+    print("\nGenerating PCA plot...")
+    plot_pca()

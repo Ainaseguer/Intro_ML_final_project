@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.decomposition import PCA
 
 
 class SVM(BaseEstimator, ClassifierMixin):
@@ -10,23 +11,23 @@ class SVM(BaseEstimator, ClassifierMixin):
     def __init__(
         self,
         learning_rate: float = 0.001,
-        lambda_param: float = 0.01,
+        c_param: float = 0.01,
         iterations: int = 1000,
     ) -> None:
         """
-        Constructor that initialises the learning rate, the lambda parameters
+        Constructor that initialises the learning rate, the c parameter
         and the iterations
 
         Args:
             learning_rate (float) = 0.001: learning rate of the model
-            lambda_param (float) = 0.01: regularization parameter
+            c_param (float) = 0.01: regularization parameter
             iterations (int) = 1000: number of iterations for training
 
         Returns:
             None
         """
         self.learning_rate = learning_rate
-        self.lambda_param = lambda_param
+        self.c_param = c_param
         self.iterations = iterations
         self.weights = None
         self.bias = None
@@ -39,12 +40,12 @@ class SVM(BaseEstimator, ClassifierMixin):
             dict: parameters of the model
         """
         return {
-            'learning_rate': self.learning_rate,
-            'lambda_param': self.lambda_param,
-            'iterations': self.iterations
+            "learning_rate": self.learning_rate,
+            "c_param": self.c_param,
+            "iterations": self.iterations,
         }
 
-    def set_params(self, **params) -> 'SVM':
+    def set_params(self, **params) -> "SVM":
         """
         Set parameters for sklearn compatibility.
 
@@ -72,11 +73,15 @@ class SVM(BaseEstimator, ClassifierMixin):
         X = np.array(features)
         y = np.array(target)
 
+        # This line is for Sklearn compatibility
+        self.classes_ = np.unique(y)
+
         n_samples, n_features = features.shape
 
         # Initializing weights and bias
-        self.weights = np.zeros(n_features)
-        self.bias = 0
+        if self.weights is None:
+            self.weights = np.zeros(n_features)
+            self.bias = 0
 
         # Converting target labels to -1 and 1 for SVM
         y_srv = np.where(y <= 0, -1, 1)
@@ -90,11 +95,11 @@ class SVM(BaseEstimator, ClassifierMixin):
                 if condition:
                     # Updating weights based on regularization
                     self.weights -= self.learning_rate * (
-                        2 * self.lambda_param * self.weights
+                        2 * self.c_param * self.weights
                     )
                 else:
                     # Updating weights based on regularization and misclassification
-                    gradient = 2 * self.lambda_param * self.weights - (y_srv[idx] * x_i)
+                    gradient = 2 * self.c_param * self.weights - (y_srv[idx] * x_i)
                     self.weights -= self.learning_rate * gradient
 
                     # Updating bias = -y_i
@@ -118,11 +123,11 @@ class SVM(BaseEstimator, ClassifierMixin):
 
         # Returning the labels 0 and 1
         return np.where(predictions == -1, 0, 1)
-    
+
     def labels(self, predictions: np.ndarray) -> np.ndarray:
         """
         Returns string labels 'B' and 'M'. 'B' for 0 and 'M' for 1.
-        
+
         Args:
             features (np.ndarray): predictions as 0 and 1
 
@@ -156,3 +161,19 @@ class SVM(BaseEstimator, ClassifierMixin):
 
         # Returning average Hinge loss value
         return np.mean(losses)
+
+    def apply_pca(self, X: np.ndarray, n_components: int = 2) -> tuple:
+        """
+        Applies Principal Component Analysis (PCA) to reduce dimensionality of features.
+
+        Args:
+            X (np.ndarray): input features
+            n_components (int): number of principal components to keep,
+                                if not set this value is 2
+
+        Returns:
+            tuple: (X_pca, pca) - transformed features and fitted PCA object
+        """
+        pca = PCA(n_components=n_components)
+        X_pca = pca.fit_transform(X)
+        return X_pca, pca

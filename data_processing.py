@@ -44,7 +44,7 @@ def letter_to_number(data: pd.Series) -> pd.Series:
 
 def data_processing(
     data_path: str = "data_given.data",
-) -> tuple[pd.DataFrame, pd.Series]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Loads data, transposes, removes first row, and scales remaining rows.
 
@@ -59,16 +59,19 @@ def data_processing(
     # Loading the data
     data = pd.read_csv(filepath_or_buffer=data_path, header=None)
     # Transposition
-    data = data.T
+    # data = data.T
     # Removing the first row
     data = data.drop(index=data.index[0])
 
     # Seperating the Target (y) and encoding the labels
-    y = data.iloc[0]
-    y = letter_to_number(y)
+    # y = data.iloc[0]
+    # y = letter_to_number(y)
+    y = letter_to_number(data.iloc[:, 1])
 
     # Scaling the Features (X) to be in range [0, 1]
-    X = data.iloc[1:].T
-    X = normalization(X.to_numpy())
+    # X = data.iloc[1:].T
+    # X = normalization(X.to_numpy())
+    X_raw = data.iloc[:, 2:].to_numpy()
+    X = normalization(X_raw)
 
-    return X, y
+    return X.to_numpy(), y.to_numpy()
