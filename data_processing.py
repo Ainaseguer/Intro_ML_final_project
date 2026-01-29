@@ -32,11 +32,11 @@ def extracting_features_and_target(
 
 def letter_to_number(data: pd.Series) -> pd.Series:
     """
-    Encodes the labels from the dataset from 'M' and 'B'
+    Encodes the labels from the dataset from 'B' and 'M'
     to be 0 and 1.
 
     Args:
-        data (pd.Series): The Target Series containing 'M' and 'B' labels.
+        data (pd.Series): The Target Series containing 'B' and 'M' labels.
 
     Returns:
         pd.Series: processed Target column with 0 and 1 labels

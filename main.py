@@ -1,4 +1,4 @@
-import numpy as np
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 
@@ -35,13 +35,18 @@ def main():
     # Final evaluation on a separate test set
     # Separating the training and test sets
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
-        X_raw, y, test_size=0.15, random_state=42, stratify=y
+        X_raw, y, test_size=0.2, random_state=42, stratify=y
     )
 
     # Preprocessing the training data
     test_preprocessing_pipeline = preprocessing_pipeline(n_components=0.95)
     X_train = test_preprocessing_pipeline.fit_transform(X_train_raw)
     X_test = test_preprocessing_pipeline.transform(X_test_raw)
+
+    print(
+        f"Number of features before PCA: {X_train_raw.shape[1]}."
+        f"Number of features after PCA: {X_train.shape[1]}"
+    )
 
     # Initializing the SVM model
     final_model = SVM()
@@ -53,8 +58,10 @@ def main():
     predictions_train = final_model.predict(X_train)
 
     # Calculating and printing the accuracy on the train set
-    train_accuracy = np.mean(predictions_train == y_train)
+    train_accuracy = accuracy_score(y_train, predictions_train)
     print(f"Train set accuracy: {train_accuracy:.4f}")
+    train_balanced_accuracy = balanced_accuracy_score(y_train, predictions_train)
+    print(f"Train set balanced accuracy: {train_balanced_accuracy:.4f}")
 
     # Calculating and printing the average Hinge loss of the train set
     train_hinge_loss_value = final_model._hinge_loss(X_train, y_train)
@@ -66,12 +73,19 @@ def main():
     print("Predictions:", label_predictions)
 
     # Calculating and printing the accuracy on the test set
-    test_accuracy = np.mean(predictions_test == y_test)
+    test_accuracy = accuracy_score(y_test, predictions_test)
     print(f"Test set accuracy: {test_accuracy:.4f}")
+    test_balanced_accuracy = balanced_accuracy_score(y_test, predictions_test)
+    print(f"Test set balanced accuracy: {test_balanced_accuracy:.4f}")
 
     # Calculating and printing the average Hinge lossof the test set
     test_hinge_loss_value = final_model._hinge_loss(X_test, y_test)
     print(f"Average Hinge loss for the test set: {test_hinge_loss_value:.4f}")
+
+    # Creating and printing the confusion matrix
+    conf_matrix = confusion_matrix(y_test, predictions_test)
+    print("Confusion Matrix:")
+    print(conf_matrix)
 
 
 if __name__ == "__main__":
