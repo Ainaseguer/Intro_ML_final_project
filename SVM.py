@@ -162,18 +162,4 @@ class SVM(BaseEstimator, ClassifierMixin):
         # Returning average Hinge loss value
         return np.mean(losses)
 
-    def apply_pca(self, X: np.ndarray, n_components: int = 2) -> tuple:
-        """
-        Applies Principal Component Analysis (PCA) to reduce dimensionality of features.
 
-        Args:
-            X (np.ndarray): input features
-            n_components (int): number of principal components to keep,
-                                if not set this value is 2
-
-        Returns:
-            tuple: (X_pca, pca) - transformed features and fitted PCA object
-        """
-        pca = PCA(n_components=n_components)
-        X_pca = pca.fit_transform(X)
-        return X_pca, pca
