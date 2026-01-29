@@ -1,9 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.model_selection import validation_curve
+from sklearn.model_selection import train_test_split, validation_curve
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler
 
-from data_processing import data_processing
+from data_processing import (
+    apply_pca,
+    extracting_features_and_target,
+    preprocessing_pipeline,
+)
 from SVM import SVM
 
 
@@ -18,16 +24,24 @@ def plot_validation_curve() -> None:
     Returns:
         None
     """
-    X, y = data_processing()
+    X_raw, y = extracting_features_and_target()
+
+    pipeline = Pipeline(
+        [
+            ("preprocessing", preprocessing_pipeline(n_components=0.95)),
+            ("svm", SVM()),
+        ]
+    )
 
     # Define the range of C values to test
     param_range = [0.0001, 0.001, 0.01, 0.1, 1, 10]
+
     # Compute validation curve
     train_scores, test_scores = validation_curve(
-        SVM(),
-        X,
+        pipeline,
+        X_raw,
         y,
-        param_name="c_param",
+        param_name="svm__c_param",
         param_range=param_range,
         cv=5,
         scoring="accuracy",
@@ -61,6 +75,7 @@ def plot_validation_curve() -> None:
 def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> None:
     """
     Plots the hinge loss curve for the SVM model over a specified number of iterations.
+
     Args:
         iterations (int): Number of iterations to train the model.
         learning_rate (float): Learning rate for the SVM model.
@@ -69,29 +84,52 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
         None
     """
 
-    X, y = data_processing()
+    X_raw, y = extracting_features_and_target()
+
+    X_train_raw, X_test_raw, y_train, y_test = train_test_split(
+        X_raw, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    preprocessing = preprocessing_pipeline(n_components=0.95)
+    X_train = preprocessing.fit_transform(X_train_raw)
+    # X_test = preprocessing.transform(X_test_raw)
 
     # Initialize SVM model with specified learning rate
     model = SVM(iterations=1, learning_rate=learning_rate)
-    model.weights = np.zeros(X.shape[1])
+    model.weights = np.zeros(X_train.shape[1])
     model.bias = 0
 
     # Train the model and record hinge loss at each iteration
-    loss_history = []
-
+    train_loss_history = []
+    # test_loss_history = []
     for i in range(iterations):
-        model.fit(X, y)
-        current_loss = model._hinge_loss(X, y)
-        loss_history.append(current_loss)
+        model.fit(X_train, y_train)
 
-    # Plot hinge loss curve
+        # Track the hinge loss on the training set
+        current_train_loss = model._hinge_loss(X_train, y_train)
+        train_loss_history.append(current_train_loss)
+
+        # # Track the hinge loss on the test set
+        # current_test_loss = model._hinge_loss(X_test, y_test)
+        # test_loss_history.append(current_test_loss)
+
+    # Plot the training hinge loss curve
     plt.figure(figsize=(10, 6))
-    plt.plot(range(iterations), loss_history, color="green", linewidth=2)
+    plt.plot(range(iterations), train_loss_history, color="green", linewidth=2)
     plt.xlabel("Iterations")
-    plt.ylabel("Average Hinge Loss")
-    plt.title("Graph showing Hinge Loss of SVM model")
+    plt.ylabel("Average Hinge Loss on the training set")
+    plt.title("Graph showing Hinge Loss of SVM model on the training set")
     plt.grid(True, alpha=0.3)
     plt.show()
+
+    # # Plot the test hinge loss curve
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(range(iterations), test_loss_history, color="green", linewidth=2)
+    # plt.xlabel("Iterations")
+    # plt.ylabel("Average Hinge Loss on the test set")
+    # plt.title("Graph showing Hinge Loss of SVM model on the test set")
+    # plt.grid(True, alpha=0.3)
+    # plt.show()
 
 
 def plot_pca(n_components: int = 2) -> None:
@@ -104,10 +142,9 @@ def plot_pca(n_components: int = 2) -> None:
     Returns:
         None
     """
-    X, y = data_processing()
+    X_raw, y = extracting_features_and_target()
 
-    model = SVM()
-    X_pca, _ = model.apply_pca(X, n_components=n_components)
+    X_pca = apply_pca(X_raw, n_components=n_components)
 
     plt.figure(figsize=(8, 6))
     scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap="viridis", alpha=0.7)
@@ -127,11 +164,19 @@ def plot_elbow_method() -> None:
     Returns:
         None
     """
-    X, y = data_processing()
+    X_raw, y = extracting_features_and_target()
+
+    X_train_raw, _, _, _ = train_test_split(
+        X_raw, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    # Scale the features to [0, 1] range
+    scaler = MinMaxScaler()
+    X_train_scaled = scaler.fit_transform(X_train_raw)
 
     # Apply PCA to the dataset and compute explained variance
-    pca = PCA(n_components=X.shape[1])
-    pca.fit(X)
+    pca = PCA(n_components=min(X_train_scaled.shape))
+    pca.fit(X_train_scaled)
     cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
 
     # Plot the elbow method graph

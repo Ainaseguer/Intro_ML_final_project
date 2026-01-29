@@ -161,5 +161,3 @@ class SVM(BaseEstimator, ClassifierMixin):
 
         # Returning average Hinge loss value
         return np.mean(losses)
-
-

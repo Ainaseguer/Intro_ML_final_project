@@ -1,25 +1,33 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler
 
 
-def normalization(data: np.ndarray) -> pd.DataFrame:
+def extracting_features_and_target(
+    data_path: str = "data_given.data",
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    Normalizes the data by scaling all columns of a DataFrame to the range[0, 1]
-    using MinMaxScaler.
+    Separates features and target from the dataset, before any processing.
 
     Args:
-        data (np.ndarray): Input features array.
+        data (pd.DataFrame): The input DataFrame containing features and target.
 
     Returns:
-        DataFrame: Scaled data where each value is in the range [0, 1].
+        tuple[np.ndarray, np.ndarray]: A tuple containing the features array (X)
+        and the target array (y).
     """
-    # Scaling the data to range [0,1]
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    data = scaler.fit_transform(data)
+    data = pd.read_csv(filepath_or_buffer=data_path, header=None)
 
-    return pd.DataFrame(data)
+    # Seperating the Target (y) and encoding the labels
+    y = data.iloc[:, 1]
+    y = letter_to_number(y)
+
+    # Extracting Features (X)
+    X = data.iloc[:, 2:]
+
+    return X.to_numpy(), y.to_numpy()
 
 
 def letter_to_number(data: pd.Series) -> pd.Series:
@@ -42,6 +50,25 @@ def letter_to_number(data: pd.Series) -> pd.Series:
 
     return data
 
+
+def preprocessing_pipeline(n_components: int | float = 0.95) -> Pipeline:
+    """
+    Creates a preprocessing pipeline that scales features and applies PCA.
+
+    Args:
+        n_components: Number of principal components for PCA.
+
+    Returns:
+        Pipeline: A sklearn Pipeline object for preprocessing.
+    """
+    return Pipeline(
+        [
+            ("scaler", MinMaxScaler(feature_range=(0, 1))),
+            ("pca", PCA(n_components=n_components, random_state=42)),
+        ]
+    )
+
+
 def apply_pca(
     X: np.ndarray,
     n_components: int | float = 0.95,
@@ -61,40 +88,31 @@ def apply_pca(
     """
     pca = PCA(n_components=n_components, random_state=random_state)
     X_pca = pca.fit_transform(X)
+
     return X_pca
 
-def data_processing(
-    data_path: str = "data_given.data",
+
+def preprocess_train_test(
+    X_train: np.ndarray, X_test: np.ndarray, n_components: int | float = 0.95
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Loads data, transposes, removes first row, and scales remaining rows.
+    Preprocesses training and test feature sets using normalization and PCA.
 
     Args:
-        data_path (str, optional): A file path containing the data.
-        Defaults to 'data_given.data'.
+        X_train: Training feature matrix.
+        X_test: Test feature matrix.
+        n_components: Number of principal components for PCA.
 
     Returns:
-        tuple[pd.DataFrame, pd.Series]: A tuple containing the processed
-        features DataFrame (X) and Target Series (y).
+        tuple[np.ndarray, np.ndarray]: Preprocessed training and test feature matrices.
     """
-    # Loading the data
-    data = pd.read_csv(filepath_or_buffer=data_path, header=None)
-    # Transposition
-    # data = data.T
-    # Removing the first row
-    data = data.drop(index=data.index[0])
+    # Create preprocessing pipeline
+    pipeline = preprocessing_pipeline(n_components=n_components)
 
-    # Seperating the Target (y) and encoding the labels
-    # y = data.iloc[0]
-    # y = letter_to_number(y)
-    y = letter_to_number(data.iloc[:, 1])
+    # Fit and transform training data
+    X_train_processed = pipeline.fit_transform(X_train)
 
-    # Scaling the Features (X) to be in range [0, 1]
-    # X = data.iloc[1:].T
-    # X = normalization(X.to_numpy())
-    X_raw = data.iloc[:, 2:].to_numpy()
-    X = normalization(X_raw).to_numpy()
+    # Transform test data using the same pipeline
+    X_test_processed = pipeline.transform(X_test)
 
-    X_final = apply_pca(X)
-
-    return X_final, y.to_numpy()
+    return X_train_processed, X_test_processed
