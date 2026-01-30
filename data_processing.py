@@ -69,28 +69,6 @@ def preprocessing_pipeline(n_components: int | float = 0.95) -> Pipeline:
     )
 
 
-def apply_pca(
-    X: np.ndarray,
-    n_components: int | float = 0.95,
-    random_state: int = 42,
-) -> np.ndarray:
-    """
-    Applies PCA to features.
-
-    Args:
-        X: Feature matrix (already scaled).
-        n_components: int for fixed #components, or float in (0,1] for variance kept.
-                     Example: 0.95 keeps enough PCs to explain 95% variance.
-        random_state: Used when svd_solver involves randomness.
-
-    Returns:
-        X_pca: PCA-transformed feature matrix.
-    """
-    pca = PCA(n_components=n_components, random_state=random_state)
-    X_pca = pca.fit_transform(X)
-
-    return X_pca
-
 
 def preprocess_train_test(
     X_train: np.ndarray, X_test: np.ndarray, n_components: int | float = 0.95

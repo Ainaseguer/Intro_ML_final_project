@@ -6,7 +6,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 
 from data_processing import (
-    apply_pca,
     extracting_features_and_target,
     preprocessing_pipeline,
 )
@@ -92,7 +91,7 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
 
     preprocessing = preprocessing_pipeline(n_components=0.95)
     X_train = preprocessing.fit_transform(X_train_raw)
-    # X_test = preprocessing.transform(X_test_raw)
+    X_test = preprocessing.transform(X_test_raw)
 
     # Initialize SVM model with specified learning rate
     model = SVM(iterations=1, learning_rate=learning_rate)
@@ -101,7 +100,7 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
 
     # Train the model and record hinge loss at each iteration
     train_loss_history = []
-    # test_loss_history = []
+    test_loss_history = []
     for i in range(iterations):
         model.fit(X_train, y_train)
 
@@ -110,8 +109,8 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
         train_loss_history.append(current_train_loss)
 
         # # Track the hinge loss on the test set
-        # current_test_loss = model._hinge_loss(X_test, y_test)
-        # test_loss_history.append(current_test_loss)
+        current_test_loss = model._hinge_loss(X_test, y_test)
+        test_loss_history.append(current_test_loss)
 
     # Plot the training hinge loss curve
     plt.figure(figsize=(10, 6))
@@ -123,13 +122,13 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
     plt.show()
 
     # # Plot the test hinge loss curve
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(range(iterations), test_loss_history, color="green", linewidth=2)
-    # plt.xlabel("Iterations")
-    # plt.ylabel("Average Hinge Loss on the test set")
-    # plt.title("Graph showing Hinge Loss of SVM model on the test set")
-    # plt.grid(True, alpha=0.3)
-    # plt.show()
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(iterations), test_loss_history, color="green", linewidth=2)
+    plt.xlabel("Iterations")
+    plt.ylabel("Average Hinge Loss on the test set")
+    plt.title("Graph showing Hinge Loss of SVM model on the test set")
+    plt.grid(True, alpha=0.3)
+    plt.show()
 
 
 def plot_pca(n_components: int = 2) -> None:
@@ -142,9 +141,9 @@ def plot_pca(n_components: int = 2) -> None:
     Returns:
         None
     """
+    processing_pipeline = preprocessing_pipeline(n_components=n_components)
     X_raw, y = extracting_features_and_target()
-
-    X_pca = apply_pca(X_raw, n_components=n_components)
+    X_pca = processing_pipeline.fit_transform(X_raw)
 
     plt.figure(figsize=(8, 6))
     scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap="viridis", alpha=0.7)
