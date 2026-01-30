@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 
 # Loading and preprocessing the data
 data = pd.read_csv("data_given.data", header=None)
@@ -11,16 +12,23 @@ data = pd.read_csv("data_given.data", header=None)
 y = data[1].map({"M": 1, "B": 0}).values
 x_data = data.drop([0, 1], axis=1)
 
+#split data before normalisation to avoid leakage 
 x_train, x_test, y_train, y_test = train_test_split(
     x_data, y, test_size=0.15, random_state=42
 )
 
+#Min-max scaling on train only
 train_min = x_train.min()
 train_max = x_train.max()
 
 
 x_train = (x_train - train_min) / (train_max - train_min)
 x_test = (x_test - train_min) / (train_max - train_min)
+
+#PCA in the train data and transpose test 
+pca = PCA(n_components=0.95, random_state=42)
+x_train = pca.fit_transform(x_train.to_numpy())
+x_test = pca.transform(x_test.to_numpy())
 
 x_train = x_train.T
 x_test = x_test.T
