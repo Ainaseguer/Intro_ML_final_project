@@ -11,11 +11,16 @@ data = pd.read_csv("data_given.data", header=None)
 y = data[1].map({"M": 1, "B": 0}).values
 x_data = data.drop([0, 1], axis=1)
 
-x = (x_data - x_data.min()) / (x_data.max() - x_data.min())
-
 x_train, x_test, y_train, y_test = train_test_split(
-    x, y, test_size=0.15, random_state=42
+    x_data, y, test_size=0.15, random_state=42
 )
+
+train_min = x_train.min()
+train_max = x_train.max()
+
+
+x_train = (x_train - train_min) / (train_max - train_min)
+x_test = (x_test - train_min) / (train_max - train_min)
 
 x_train = x_train.T
 x_test = x_test.T
