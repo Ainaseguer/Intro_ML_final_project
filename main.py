@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, confusion_matrix
+from sklearn.metrics import balanced_accuracy_score, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 
@@ -7,9 +7,7 @@ from SVM import SVM
 
 
 def main():
-    # Preprocessing
     # Extracting features and targets from the data set
-    # Converting to numpy arrays
     X_raw, y = extracting_features_and_target()
 
     # K-Fold Cross-Validation
@@ -21,7 +19,7 @@ def main():
         ]
     )
 
-    # Defining a K-Fold cross-validator
+    # Defining a k-fold cross-validator
     kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
     # Performing cross-validation and getting accuracy for each fold
@@ -31,8 +29,8 @@ def main():
     # Printing the average accuracy across all folds
     print(f"Average cross-validation accuracy: {scores.mean():.4f}")
 
-    # Initializing the model
     # Final evaluation on a separate test set
+
     # Separating the training and test sets
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
         X_raw, y, test_size=0.2, random_state=42, stratify=y
@@ -43,6 +41,7 @@ def main():
     X_train = test_preprocessing_pipeline.fit_transform(X_train_raw)
     X_test = test_preprocessing_pipeline.transform(X_test_raw)
 
+    # Printing the number of features before and after PCA
     print(
         f"Number of features before PCA: {X_train_raw.shape[1]}."
         f"Number of features after PCA: {X_train.shape[1]}"
@@ -57,9 +56,7 @@ def main():
     # Making predictions on the training set
     predictions_train = final_model.predict(X_train)
 
-    # Calculating and printing the accuracy on the train set
-    train_accuracy = accuracy_score(y_train, predictions_train)
-    print(f"Train set accuracy: {train_accuracy:.4f}")
+    # Calculating and printing the balanced accuracy on the train set
     train_balanced_accuracy = balanced_accuracy_score(y_train, predictions_train)
     print(f"Train set balanced accuracy: {train_balanced_accuracy:.4f}")
 
@@ -72,9 +69,7 @@ def main():
     label_predictions = final_model.labels(predictions_test)
     print("Predictions:", label_predictions)
 
-    # Calculating and printing the accuracy on the test set
-    test_accuracy = accuracy_score(y_test, predictions_test)
-    print(f"Test set accuracy: {test_accuracy:.4f}")
+    # Calculating and printing the balanced accuracy on the test set
     test_balanced_accuracy = balanced_accuracy_score(y_test, predictions_test)
     print(f"Test set balanced accuracy: {test_balanced_accuracy:.4f}")
 
@@ -88,5 +83,6 @@ def main():
     print(conf_matrix)
 
 
+# Plotting all the graphs
 if __name__ == "__main__":
     main()

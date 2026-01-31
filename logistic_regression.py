@@ -1,10 +1,10 @@
 # This code is copied from https://www.geeksforgeeks.org/machine-learning/ml-kaggle-breast-cancer-wisconsin-diagnosis-using-logistic-regression/
-# Only the preprocessing steps have been adjusted to fit our format of the dataset.
+# Only the preprocessing steps have been adjusted to fit our format of the dataset and we have also fixed the train-test split to avoid data leakage.
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
 
 # Loading and preprocessing the data
 data = pd.read_csv("data_given.data", header=None)
@@ -12,20 +12,18 @@ data = pd.read_csv("data_given.data", header=None)
 y = data[1].map({"M": 1, "B": 0}).values
 x_data = data.drop([0, 1], axis=1)
 
-#split data before normalisation to avoid leakage 
+# Split data before normalization to avoid leakage
 x_train, x_test, y_train, y_test = train_test_split(
     x_data, y, test_size=0.15, random_state=42
 )
 
-#Min-max scaling on train only
+# Min-max scaling on the training set only
 train_min = x_train.min()
 train_max = x_train.max()
-
-
 x_train = (x_train - train_min) / (train_max - train_min)
 x_test = (x_test - train_min) / (train_max - train_min)
 
-#PCA in the train data and transpose test 
+# PCA in the train data and transpose test
 pca = PCA(n_components=0.95, random_state=42)
 x_train = pca.fit_transform(x_train.to_numpy())
 x_test = pca.transform(x_test.to_numpy())
@@ -74,6 +72,7 @@ def forward_backward_propagation(w, b, x_train, y_train):
 def update(w, b, x_train, y_train, learning_rate, num_iterations):
     costs = []
     gradients = {}
+
     for i in range(num_iterations):
         cost, grad = forward_backward_propagation(w, b, x_train, y_train)
         w -= learning_rate * grad["derivative_weight"]
@@ -118,6 +117,7 @@ def logistic_regression(
     print(f"Test accuracy: {100 - np.mean(np.abs(y_prediction_test - y_test)) * 100}%")
 
 
+# Calling the logistic regression function
 logistic_regression(
     x_train, y_train, x_test, y_test, learning_rate=0.01, num_iterations=1000
 )

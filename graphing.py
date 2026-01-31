@@ -82,13 +82,14 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
     Returns:
         None
     """
-
     X_raw, y = extracting_features_and_target()
 
+    # Split the data into training and testing sets
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
         X_raw, y, test_size=0.2, random_state=42, stratify=y
     )
 
+    # Preprocess the data
     preprocessing = preprocessing_pipeline(n_components=0.95)
     X_train = preprocessing.fit_transform(X_train_raw)
     X_test = preprocessing.transform(X_test_raw)
@@ -108,7 +109,7 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
         current_train_loss = model._hinge_loss(X_train, y_train)
         train_loss_history.append(current_train_loss)
 
-        # # Track the hinge loss on the test set
+        # Track the hinge loss on the test set
         current_test_loss = model._hinge_loss(X_test, y_test)
         test_loss_history.append(current_test_loss)
 
@@ -121,7 +122,7 @@ def plot_loss_curve(iterations: int = 1000, learning_rate: float = 0.001) -> Non
     plt.grid(True, alpha=0.3)
     plt.show()
 
-    # # Plot the test hinge loss curve
+    # Plot the test hinge loss curve
     plt.figure(figsize=(10, 6))
     plt.plot(range(iterations), test_loss_history, color="green", linewidth=2)
     plt.xlabel("Iterations")
@@ -136,15 +137,18 @@ def plot_pca(n_components: int = 2) -> None:
     Plots the PCA results of the dataset.
 
     Args:
-        None
+        n_components (int): Number of principal components to reduce to.
+            Default is 2 for 2D plotting.
 
     Returns:
         None
     """
+    # Preprocess the data and apply PCA
     processing_pipeline = preprocessing_pipeline(n_components=n_components)
     X_raw, y = extracting_features_and_target()
     X_pca = processing_pipeline.fit_transform(X_raw)
 
+    # Plot the PCA results
     plt.figure(figsize=(8, 6))
     scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap="viridis", alpha=0.7)
     plt.xlabel("Principal Component 1")
@@ -160,11 +164,13 @@ def plot_elbow_method() -> None:
 
     Args:
         None
+
     Returns:
         None
     """
     X_raw, y = extracting_features_and_target()
 
+    # Splitting the data
     X_train_raw, _, _, _ = train_test_split(
         X_raw, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -197,6 +203,7 @@ def plot_elbow_method() -> None:
     plt.show()
 
 
+# Plotting all the graphs
 if __name__ == "__main__":
     print("Generating validation curve...")
     plot_validation_curve()

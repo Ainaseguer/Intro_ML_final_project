@@ -12,7 +12,7 @@ def extracting_features_and_target(
     Separates features and target from the dataset, before any processing.
 
     Args:
-        data (pd.DataFrame): The input DataFrame containing features and target.
+        data_path (str): The path to the input data file.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: A tuple containing the features array (X)
@@ -27,6 +27,7 @@ def extracting_features_and_target(
     # Extracting Features (X)
     X = data.iloc[:, 2:]
 
+    # Converting the features and targets to numpy arrays
     return X.to_numpy(), y.to_numpy()
 
 
@@ -56,7 +57,8 @@ def preprocessing_pipeline(n_components: int | float = 0.95) -> Pipeline:
     Creates a preprocessing pipeline that scales features and applies PCA.
 
     Args:
-        n_components: Number of principal components for PCA.
+        n_components (int | float): Number of principal components for PCA.
+            Default is set to 0.95.
 
     Returns:
         Pipeline: A sklearn Pipeline object for preprocessing.
@@ -69,7 +71,6 @@ def preprocessing_pipeline(n_components: int | float = 0.95) -> Pipeline:
     )
 
 
-
 def preprocess_train_test(
     X_train: np.ndarray, X_test: np.ndarray, n_components: int | float = 0.95
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -77,9 +78,10 @@ def preprocess_train_test(
     Preprocesses training and test feature sets using normalization and PCA.
 
     Args:
-        X_train: Training feature matrix.
-        X_test: Test feature matrix.
-        n_components: Number of principal components for PCA.
+        X_train (np.ndarray): Training feature matrix.
+        X_test (np.ndarray): Test feature matrix.
+        n_components (int | float): Number of principal components for PCA.
+            Default is set to 0.95.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Preprocessed training and test feature matrices.

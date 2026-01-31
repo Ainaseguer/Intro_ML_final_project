@@ -1,6 +1,5 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.decomposition import PCA
 
 
 class SVM(BaseEstimator, ClassifierMixin):
@@ -15,7 +14,7 @@ class SVM(BaseEstimator, ClassifierMixin):
         iterations: int = 1000,
     ) -> None:
         """
-        Constructor that initialises the learning rate, the c parameter
+        Constructor that initialises the learning rate, the C parameter
         and the iterations
 
         Args:
@@ -51,6 +50,7 @@ class SVM(BaseEstimator, ClassifierMixin):
 
         Args:
             **params: parameters to set
+
         Returns:
             self
         """
@@ -73,7 +73,7 @@ class SVM(BaseEstimator, ClassifierMixin):
         X = np.array(features)
         y = np.array(target)
 
-        # This line is for Sklearn compatibility
+        # Ensuring sklearn compatibility
         self.classes_ = np.unique(y)
 
         n_samples, n_features = features.shape
